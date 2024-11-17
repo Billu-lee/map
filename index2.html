@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-    <title>Field Boundary with Satellite Map</title>
+    <title>Field Boundary with Live Location</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
 </head>
-
 <body>
     <h1>Mark Your Field Corners</h1>
     <div id="map" style="height: 500px;"></div>
@@ -18,23 +18,39 @@
 
     <script>
         // Initialize the map
-        const map = L.map('map').setView([0,0], 103); // Set a very close zoom level (20)
+        const map = L.map('map').setView([0, 0], 20); // Set initial view with close zoom
 
-        // Add a satellite base layer
+        // Add Esri Satellite tile layer
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
             attribution: '&copy; <a href="https://www.esri.com/">Esri</a>, Earthstar Geographics'
         }).addTo(map);
 
+        // Add Locate Control to the map
+        L.control.locate({
+            position: 'topright',  // Position of the button
+            drawCircle: true,     // Draw an accuracy circle
+            follow: true,         // Follow the user's location
+            setView: true,        // Center the map on the user's location
+            flyTo: true,          // Smoothly zoom to the user's location
+            keepCurrentZoomLevel: false, // Allow automatic zooming
+            markerStyle: {
+                color: 'blue',    // Blue color for the location marker
+                fillColor: '#007bff', // Blue fill color
+                fillOpacity: 0.6,
+                weight: 2
+            },
+            circleStyle: {
+                color: 'blue',    // Blue color for the accuracy circle
+                fillColor: '#007bff',
+                fillOpacity: 0.2
+            },
+            locateOptions: {      // Geolocation options
+                enableHighAccuracy: true
+            }
+        }).addTo(map);
+
         // Array to store corner points
         let cornerPoints = [];
-
-        // Locate the user initially
-        map.locate({ setView: true, maxZoom: 20 });
-
-        // Add event to update location
-        map.on('locationfound', (e) => {
-            const userMarker = L.marker(e.latlng).addTo(map).bindPopup('You are here!').openPopup();
-        });
 
         // Add point button functionality
         document.getElementById('add-point').addEventListener('click', () => {
@@ -67,8 +83,12 @@
                     map.removeLayer(layer);
                 }
             });
+
+            // Add Esri Satellite tile layer again
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: '&copy; <a href="https://www.esri.com/">Esri</a>, Earthstar Geographics'
+            }).addTo(map);
         });
     </script>
 </body>
-
 </html>
