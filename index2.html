@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Field Boundary with Live Location</title>
+    <title>Field Boundary with Fast Point Marking</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
@@ -27,41 +27,58 @@
 
         // Add Locate Control to the map
         L.control.locate({
-            position: 'topright',  // Position of the button
-            drawCircle: true,     // Draw an accuracy circle
-            follow: true,         // Follow the user's location
-            setView: true,        // Center the map on the user's location
-            flyTo: true,          // Smoothly zoom to the user's location
-            keepCurrentZoomLevel: false, // Allow automatic zooming
+            position: 'topright',
+            drawCircle: true,
+            follow: true,
+            setView: true,
+            flyTo: true,
+            keepCurrentZoomLevel: false,
             markerStyle: {
-                color: 'blue',    // Blue color for the location marker
-                fillColor: '#007bff', // Blue fill color
+                color: 'blue',
+                fillColor: '#007bff',
                 fillOpacity: 0.6,
                 weight: 2
             },
             circleStyle: {
-                color: 'blue',    // Blue color for the accuracy circle
+                color: 'blue',
                 fillColor: '#007bff',
                 fillOpacity: 0.2
             },
-            locateOptions: {      // Geolocation options
-                enableHighAccuracy: true
+            locateOptions: {
+                enableHighAccuracy: true,
+                timeout: 5000, // Reduce timeout for quicker responses
+                maximumAge: 0  // Avoid using stale cached positions
             }
         }).addTo(map);
 
         // Array to store corner points
         let cornerPoints = [];
+        let currentLatLng = null;
+
+        // Update location in real time
+        navigator.geolocation.watchPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                currentLatLng = [latitude, longitude];
+            },
+            (error) => {
+                console.error('Error getting location:', error);
+                alert('Unable to retrieve your location.');
+            },
+            { enableHighAccuracy: true, timeout: 5000 }
+        );
 
         // Add point button functionality
         document.getElementById('add-point').addEventListener('click', () => {
-            map.locate({ setView: false });
-            map.once('locationfound', (e) => {
-                const latLng = [e.latlng.lat, e.latlng.lng];
-                cornerPoints.push(latLng);
+            if (!currentLatLng) {
+                alert('Unable to get your current location.');
+                return;
+            }
 
-                // Add marker to the map
-                L.marker(latLng).addTo(map).bindPopup(`Corner Point ${cornerPoints.length}`).openPopup();
-            });
+            cornerPoints.push(currentLatLng);
+
+            // Add marker to the map
+            L.marker(currentLatLng).addTo(map).bindPopup(`Corner Point ${cornerPoints.length}`).openPopup();
         });
 
         // Draw polygon button functionality
