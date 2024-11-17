@@ -1,1 +1,74 @@
+<!DOCTYPE html>
+<html>
 
+<head>
+    <title>Field Boundary with Satellite Map</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+</head>
+
+<body>
+    <h1>Mark Your Field Corners</h1>
+    <div id="map" style="height: 500px;"></div>
+    <button id="add-point">Add Current Point</button>
+    <button id="draw-polygon">Draw Polygon</button>
+    <button id="reset">Reset</button>
+
+    <script>
+        // Initialize the map
+        const map = L.map('map').setView([0,0], 103); // Set a very close zoom level (20)
+
+        // Add a satellite base layer
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: '&copy; <a href="https://www.esri.com/">Esri</a>, Earthstar Geographics'
+        }).addTo(map);
+
+        // Array to store corner points
+        let cornerPoints = [];
+
+        // Locate the user initially
+        map.locate({ setView: true, maxZoom: 20 });
+
+        // Add event to update location
+        map.on('locationfound', (e) => {
+            const userMarker = L.marker(e.latlng).addTo(map).bindPopup('You are here!').openPopup();
+        });
+
+        // Add point button functionality
+        document.getElementById('add-point').addEventListener('click', () => {
+            map.locate({ setView: false });
+            map.once('locationfound', (e) => {
+                const latLng = [e.latlng.lat, e.latlng.lng];
+                cornerPoints.push(latLng);
+
+                // Add marker to the map
+                L.marker(latLng).addTo(map).bindPopup(`Corner Point ${cornerPoints.length}`).openPopup();
+            });
+        });
+
+        // Draw polygon button functionality
+        document.getElementById('draw-polygon').addEventListener('click', () => {
+            if (cornerPoints.length < 3) {
+                alert('You need at least 3 points to create a polygon.');
+                return;
+            }
+
+            // Draw the polygon
+            L.polygon(cornerPoints, { color: 'blue' }).addTo(map);
+        });
+
+        // Reset button functionality
+        document.getElementById('reset').addEventListener('click', () => {
+            cornerPoints = [];
+            map.eachLayer((layer) => {
+                if (!layer._url) {
+                    map.removeLayer(layer);
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
