@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Field Boundary with Fast Point Marking</title>
+    <title>Optimized Map Loading</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
@@ -17,22 +17,48 @@
     <button id="reset">Reset</button>
 
     <script>
-        // Initialize the map
-        const map = L.map('map').setView([0, 0], 20); // Set initial view with close zoom
+        // Default fallback map state
+        const defaultMapState = {
+            lat: 0, // Default latitude
+            lng: 0, // Default longitude
+            zoom: 2 // Default zoom level (global view)
+        };
+
+        // Initialize the map with a temporary default view
+        const map = L.map('map').setView([defaultMapState.lat, defaultMapState.lng], defaultMapState.zoom);
 
         // Add Esri Satellite tile layer
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
             attribution: '&copy; <a href="https://www.esri.com/">Esri</a>, Earthstar Geographics'
         }).addTo(map);
 
-        // Add Locate Control to the map
+        // Attempt to locate the user's position
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                map.setView([latitude, longitude], 20); // Set map to user's location at close zoom level
+            },
+            (error) => {
+                console.error('Geolocation failed:', error);
+                // Use fallback view; location failed or timed out
+                map.setView([defaultMapState.lat, defaultMapState.lng], defaultMapState.zoom);
+                alert('Unable to retrieve your location. Showing default view.');
+            },
+            {
+                enableHighAccuracy: true, // Request high accuracy location
+                timeout: 3000, // Reduce timeout for quicker fallback
+                maximumAge: 0 // Avoid using stale location data
+            }
+        );
+
+        // Add Locate Control for user convenience
         L.control.locate({
             position: 'topright',
             drawCircle: true,
-            follow: true,
+            follow: false,
             setView: true,
-            flyTo: true,
-            keepCurrentZoomLevel: false,
+            flyTo: false, // Disable animation for faster interaction
+            keepCurrentZoomLevel: true, // Avoid unnecessary zoom changes
             markerStyle: {
                 color: 'blue',
                 fillColor: '#007bff',
@@ -46,8 +72,8 @@
             },
             locateOptions: {
                 enableHighAccuracy: true,
-                timeout: 5000, // Reduce timeout for quicker responses
-                maximumAge: 0  // Avoid using stale cached positions
+                timeout: 3000,
+                maximumAge: 0
             }
         }).addTo(map);
 
@@ -55,15 +81,14 @@
         let cornerPoints = [];
         let currentLatLng = null;
 
-        // Update location in real time
+        // Watch position in real-time
         navigator.geolocation.watchPosition(
             (position) => {
                 const { latitude, longitude } = position.coords;
                 currentLatLng = [latitude, longitude];
             },
             (error) => {
-                console.error('Error getting location:', error);
-                alert('Unable to retrieve your location.');
+                console.error('Real-time location tracking failed:', error);
             },
             { enableHighAccuracy: true, timeout: 5000 }
         );
