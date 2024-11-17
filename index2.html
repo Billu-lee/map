@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Fast Loading Map</title>
+    <title>Fast Esri Satellite Map</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
@@ -17,9 +17,9 @@
     <button id="reset">Reset</button>
 
     <script>
-        // Default fallback map state
+        // Default fallback location if geolocation fails
         const defaultMapState = {
-            lat: -1.2921, // Nairobi, Kenya (example fallback)
+            lat: -1.2921, // Example: Nairobi, Kenya
             lng: 36.8219,
             zoom: 12
         };
@@ -27,42 +27,30 @@
         // Initialize map with fallback view
         const map = L.map('map').setView([defaultMapState.lat, defaultMapState.lng], defaultMapState.zoom);
 
-        // Add a lightweight tile layer for instant loading
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        // Add Esri Satellite tile layer
+        const esriTiles = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: '&copy; <a href="https://www.esri.com/">Esri</a>, Earthstar Geographics'
         }).addTo(map);
 
-        // Function to switch to Esri Satellite tiles after location is set
-        const loadEsriTiles = () => {
-            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                attribution: '&copy; <a href="https://www.esri.com/">Esri</a>, Earthstar Geographics'
-            }).addTo(map);
-        };
-
-        // Try to locate the user quickly with watchPosition
+        // Try to locate the user quickly
         let currentLatLng = null;
 
-        navigator.geolocation.watchPosition(
+        navigator.geolocation.getCurrentPosition(
             (position) => {
                 const { latitude, longitude } = position.coords;
                 currentLatLng = [latitude, longitude];
 
-                // Center the map only once for performance
-                if (!map._userLocated) {
-                    map.setView(currentLatLng, 20); // Close zoom level for user's location
-                    map._userLocated = true; // Prevent further recentering
-                    loadEsriTiles(); // Switch to satellite view
-                }
+                // Center the map to the user's location
+                map.setView(currentLatLng, 20); // Close zoom level for accurate view
             },
             (error) => {
                 console.error('Geolocation error:', error);
-                alert('Unable to retrieve your location. Using default view.');
-                loadEsriTiles(); // Ensure tiles load even if location fails
+                alert('Unable to retrieve your location. Showing default view.');
             },
             {
-                enableHighAccuracy: false, // Set to false for faster acquisition
-                timeout: 3000, // Quick timeout for responsiveness
-                maximumAge: 1000 // Use recent positions if available
+                enableHighAccuracy: true, // High accuracy for better positioning
+                timeout: 5000, // Short timeout for faster response
+                maximumAge: 0 // Avoid stale data
             }
         );
 
@@ -86,9 +74,9 @@
                 fillOpacity: 0.2
             },
             locateOptions: {
-                enableHighAccuracy: false,
-                timeout: 3000,
-                maximumAge: 1000
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 0
             }
         }).addTo(map);
 
@@ -129,7 +117,7 @@
             });
 
             // Reload Esri Satellite tiles
-            loadEsriTiles();
+            esriTiles.addTo(map);
         });
     </script>
 </body>
