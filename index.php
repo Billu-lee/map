@@ -15,10 +15,10 @@
 </head>
 
 <body>
-    <h1>Mark Your Field Corners</h1>
+    <h1>Mark Your Field Corners....</h1>
     <div id="map" style="height: 500px;"></div>
-    <button id="add-point">Add Current Point</button>
-    <button id="draw-polygon">Draw Polygon</button>
+    <button id="add-point">Pin</button>
+    <button id="draw-polygon">Draw</button>
     <button id="reset">Reset</button>
     <button id="sendBtn">Send</button>
 
@@ -35,20 +35,20 @@
                     <form id="detailsForm">
                         <div class="mb-3">
                             <label for="fullName" class="form-label">Full Name</label>
-                            <input type="text" class="form-control" id="fullName" placeholder="Enter your full name"
-                                required>
+                            <input type="text" id="name" name="name" required>
+
                         </div>
                         <div class="mb-3">
                             <label for="phoneNumber" class="form-label">Phone Number</label>
-                            <input type="tel" class="form-control" id="phoneNumber"
-                                placeholder="Enter your phone number" required>
+                            <input type="text" id="phone" name="phone" required>
+
                         </div>
                         <div class="mb-3">
                             <label for="placeName" class="form-label">Place Name</label>
                             <input type="text" class="form-control" id="placeName" placeholder="Enter your place name"
                                 required>
                         </div>
-                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <button type="submit" class="btn btn-primary" id="save-data">Save Data</button>
                     </form>
                 </div>
             </div>
@@ -63,7 +63,7 @@
         const defaultMapState = {
             lat: -1.2921, // Example: Nairobi, Kenya
             lng: 36.8219,
-            zoom: 12
+            zoom: 20
         };
 
         // Initialize map with fallback view
@@ -167,6 +167,45 @@
             const formModal = new bootstrap.Modal(document.getElementById('formModal'));
             formModal.show();
         });
+
+
+        // ajax to sendata to php 
+        document.getElementById('save-data').addEventListener('click', () => {
+            const name = document.getElementById('name').value;
+            const phone = document.getElementById('phone').value;
+
+            if (!name || !phone) {
+                alert('Please provide client details.');
+                return;
+            }
+
+            if (cornerPoints.length < 1) {
+                alert('At least 3 points are needed to save.');
+                return;
+            }
+
+            const data = {
+                name,
+                phone,
+                cornerPoints,
+            };
+
+            fetch('save_data.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            })
+                .then((response) => response.json())
+                .then((result) => {
+                    if (result.success) {
+                        alert('Data saved successfully.');
+                    } else {
+                        alert(`Error: ${result.message}`);
+                    }
+                })
+                .catch((error) => console.error('Error:', error));
+        });
+
 
     </script>
 </body>
