@@ -1,3 +1,4 @@
+<!-- save_data.php -->
 <?php
 header('Content-Type: application/json');
 
@@ -15,9 +16,10 @@ try {
 
     $name = $data['name'] ?? '';
     $phone = $data['phone'] ?? '';
+    $place = $data['place'] ?? '';
     $cornerPoints = $data['cornerPoints'] ?? [];
 
-    if (empty($name) || empty($phone) || count($cornerPoints) < 1) {
+    if ( empty($name) || empty($phone) || empty($place)  || count($cornerPoints) < 1) {
         echo json_encode(['success' => false, 'message' => 'Invalid input.']);
         exit;
     }
@@ -28,8 +30,12 @@ try {
     $clientId = $pdo->lastInsertId();
 
     // Insert field
-    $stmt = $pdo->prepare("INSERT INTO FIELD (location, client_id) VALUES ('Custom Location', :client_id)");
-    $stmt->execute(['client_id' => $clientId]);
+    $stmt = $pdo->prepare("INSERT INTO FIELD (location, client_id) VALUES (:place, :client_id)");
+        $stmt->execute([
+            'client_id' => $clientId,
+            'place'=> $place,//binds the value of $place to the :place placeholder
+
+    ]);
     $fieldId = $pdo->lastInsertId();
 
     // Insert points

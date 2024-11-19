@@ -1,3 +1,4 @@
+<!-- index.php -->
 <!DOCTYPE html>
 <html>
 
@@ -15,7 +16,7 @@
 </head>
 
 <body>
-    <h1>Mark Your Field Corners....</h1>
+    <h1>Mark Your Field Corners</h1>
     <div id="map" style="height: 500px;"></div>
     <button id="add-point">Pin</button>
     <button id="draw-polygon">Draw</button>
@@ -32,23 +33,42 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="detailsForm">
+                    <form id="detailsForm" novalidate>
                         <div class="mb-3">
                             <label for="fullName" class="form-label">Full Name</label>
-                            <input type="text" id="name" name="name" required>
-
+                            <input
+                                type="text"
+                                id="name"
+                                name="name"
+                                class="form-control"
+                                placeholder="Enter your full name"
+                                required>
+                            <div class="invalid-feedback">Please enter your full name.</div>
                         </div>
                         <div class="mb-3">
                             <label for="phoneNumber" class="form-label">Phone Number</label>
-                            <input type="text" id="phone" name="phone" required>
-
+                            <input
+                                type="tel"
+                                id="phone"
+                                name="phone"
+                                class="form-control"
+                                placeholder="Enter your phone number"
+                                pattern="^[0-9]{10,15}$"
+                                required>
+                            <div class="invalid-feedback">Please enter a valid phone number (10-15 digits).</div>
                         </div>
                         <div class="mb-3">
                             <label for="placeName" class="form-label">Place Name</label>
-                            <input type="text" class="form-control" id="placeName" placeholder="Enter your place name"
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="place"
+                                name="place"
+                                placeholder="Enter the place name"
                                 required>
+                            <div class="invalid-feedback">Please enter the place name.</div>
                         </div>
-                        <button type="submit" class="btn btn-primary" id="save-data">Save Data</button>
+                        <button type="submit" class="btn btn-primary w-100" id="save-data">Save Data</button>
                     </form>
                 </div>
             </div>
@@ -79,7 +99,10 @@
 
         navigator.geolocation.getCurrentPosition(
             (position) => {
-                const { latitude, longitude } = position.coords;
+                const {
+                    latitude,
+                    longitude
+                } = position.coords;
                 currentLatLng = [latitude, longitude];
 
                 // Center the map to the user's location
@@ -88,8 +111,7 @@
             (error) => {
                 console.error('Geolocation error:', error);
                 alert('Unable to retrieve your location. Showing default view.');
-            },
-            {
+            }, {
                 enableHighAccuracy: true, // High accuracy for better positioning
                 timeout: 5000, // Short timeout for faster response
                 maximumAge: 0 // Avoid stale data
@@ -146,7 +168,9 @@
             }
 
             // Draw the polygon
-            L.polygon(cornerPoints, { color: 'blue' }).addTo(map);
+            L.polygon(cornerPoints, {
+                color: 'blue'
+            }).addTo(map);
         });
 
         // Reset button functionality
@@ -173,28 +197,33 @@
         document.getElementById('save-data').addEventListener('click', () => {
             const name = document.getElementById('name').value;
             const phone = document.getElementById('phone').value;
+            const place = document.getElementById('place').value;
 
-            if (!name || !phone) {
+            if (!name || !phone || !place) {
                 alert('Please provide client details.');
                 return;
             }
 
             if (cornerPoints.length < 1) {
-                alert('At least 3 points are needed to save.');
+                alert('At least 1 points are needed to save.');
                 return;
             }
 
+            // Kutuma Data kwenda PHP script i.e. save_data.php
             const data = {
                 name,
                 phone,
+                place,
                 cornerPoints,
             };
 
             fetch('save_data.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
-            })
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data),
+                })
                 .then((response) => response.json())
                 .then((result) => {
                     if (result.success) {
@@ -207,6 +236,19 @@
         });
 
 
+        //code za kuvalidate form
+        document.getElementById('detailsForm').addEventListener('submit', function(event) {
+            const form = this;
+
+            // Check if form is valid
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+
+            // Add Bootstrap validation class
+            form.classList.add('was-validated');
+        });
     </script>
 </body>
 
