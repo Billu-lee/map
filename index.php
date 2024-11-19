@@ -3,7 +3,7 @@
 <html>
 
 <head>
-    <title>Fast Esri Satellite Map</title>
+    <title>Databenki GPS</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
@@ -12,13 +12,36 @@
     <script src="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
     <!-- Link to Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    
+    <style>
+    button {
+        background-color:  gray; /* Green background */
+        color: white; /* White text */
+        padding: 5px 10px; /* Padding around the text */
+        border: none; /* No border */
+        border-radius: 5px; /* Rounded corners */
+        font-size: 16px; /* Font size */
+        cursor: pointer; /* Pointer cursor on hover */
+        transition: background-color 0.3s ease; /* Smooth transition for hover effect */
+        margin-top: 10px;
+    }
 
+    button:hover {
+        background-color:#4CAF50 ; /* Darker green on hover */
+    }
+
+    button:focus {
+        outline: none; /* Remove focus outline */
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* Shadow on focus */
+    }
+</style>
 </head>
 
 <body>
     <h1>Mark Your Field Corners</h1>
     <div id="map" style="height: 500px;"></div>
-    <button id="add-point">Pin</button>
+    <button id="add-point" >Pin</button>
     <button id="draw-polygon">Draw</button>
     <button id="reset">Reset</button>
     <button id="sendBtn">Send</button>
@@ -90,9 +113,15 @@
         const map = L.map('map').setView([defaultMapState.lat, defaultMapState.lng], defaultMapState.zoom);
 
         // Add Esri Satellite tile layer
-        const esriTiles = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        const esriTiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.esri.com/">Esri</a>, Earthstar Geographics'
         }).addTo(map);
+
+        //==================================================
+        //FOR ESRI MAP SERVICE CHANGE THE LINK  https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png
+        // TO       https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}
+        //==================================================
+        
 
         // Try to locate the user quickly
         let currentLatLng = null;
@@ -209,7 +238,7 @@
                 return;
             }
 
-            // Kutuma Data kwenda PHP script i.e. save_data.php
+            // Kutuma Data kwenda PHP script i.e. save_data.php kwa kutumia JSON
             const data = {
                 name,
                 phone,
