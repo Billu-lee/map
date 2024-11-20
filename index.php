@@ -10,41 +10,49 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
-    <!-- Link to Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    
+
+
     <style>
-    button {
-        background-color:  gray; /* Green background */
-        color: white; /* White text */
-        padding: 5px 10px; /* Padding around the text */
-        border: none; /* No border */
-        border-radius: 5px; /* Rounded corners */
-        font-size: 16px; /* Font size */
-        cursor: pointer; /* Pointer cursor on hover */
-        transition: background-color 0.3s ease; /* Smooth transition for hover effect */
-        margin-top: 10px;
-    }
+        #map {
+            height: 100vh;
+            width: 100vw;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 0;
+        }
 
-    button:hover {
-        background-color:#4CAF50 ; /* Darker green on hover */
-    }
+        #button-container {
+            position: absolute;
+            bottom: 10px;
+            left: 5%;
+            z-index: 1;
+            display: flex;
+        }
 
-    button:focus {
-        outline: none; /* Remove focus outline */
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* Shadow on focus */
-    }
-</style>
+        button{
+            box-shadow: 1px 1px 2px black;
+        }
+    </style>
 </head>
 
 <body>
-    <h1>Mark Your Field Corners</h1>
-    <div id="map" style="height: 500px;"></div>
-    <button id="add-point" >Pin</button>
-    <button id="draw-polygon">Draw</button>
-    <button id="reset">Reset</button>
-    <button id="sendBtn">Send</button>
+    <div id="map"></div>
+    <div id="button-container" class="row text-center">
+        <div class="col-3">
+            <button id="add-point" class="btn btn-secondary rounded-pill">Pin</button>
+        </div>
+        <div class="col-3">
+            <button id="draw-polygon" class="btn btn-secondary  rounded-pill">Draw</button>
+        </div>
+        <div class="col-3">
+            <button id="reset" class="btn btn-secondary rounded-pill">Reset</button>
+        </div>
+        <div class="col-3">
+            <button id="sendBtn" class="btn btn-secondary rounded-pill">Send</button>
+        </div>
+    </div>
 
 
     <!-- Modal for the Form -->
@@ -102,15 +110,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
 
     <script>
-        // Default fallback location if geolocation fails
-        const defaultMapState = {
-            lat: -1.2921, // Example: Nairobi, Kenya
-            lng: 36.8219,
-            zoom: 20
-        };
-
-        // Initialize map with fallback view
-        const map = L.map('map').setView([defaultMapState.lat, defaultMapState.lng], defaultMapState.zoom);
+        // Initialize the map
+        var map = L.map('map').setView([-6.509, 38.08], 20); // Zoom set to a reasonable level
 
         // Add Esri Satellite tile layer
         const esriTiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -121,7 +122,7 @@
         //FOR ESRI MAP SERVICE CHANGE THE LINK  https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png
         // TO       https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}
         //==================================================
-        
+
 
         // Try to locate the user quickly
         let currentLatLng = null;
@@ -222,7 +223,7 @@
         });
 
 
-        // ajax to sendata to php 
+        // ajax to send data to php 
         document.getElementById('save-data').addEventListener('click', () => {
             const name = document.getElementById('name').value;
             const phone = document.getElementById('phone').value;
@@ -280,5 +281,4 @@
         });
     </script>
 </body>
-
 </html>
